@@ -29,12 +29,12 @@ from tqdm import tqdm
 #keras.config.disable_interactive_logging()
 
 # DEFINE PARAMETERS
-epochs_keras=500
-iterations_models=3000
+epochs_keras=100
+iterations_models=300
 alphas=[0,0.033,0.066,0.1,0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
 #alphas=[0.1,0.3,0.5,0.7, 0.9]
-#alphas=[1]
 alphas_ganite=[-50, -40,-30,-20, -10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50]
+alphas_ganite=[-8]
 prefix="/Users/german.sanchez/Desktop/PAPER1/PROD_GANITE/DATA_PROD/BINARY/SYNTHETIC/MANUAL/"
 prefix_ganite="/Users/german.sanchez/Desktop/PAPER1/PROD_GANITE/DATA_PROD/BINARY/SYNTHETIC/GANITE/"
 prefix_results="/Users/german.sanchez/Desktop/PAPER1/PROD_GANITE/BINARY_MODEL/SYNTHETIC/RESULTS/"
@@ -53,7 +53,7 @@ def doubly_robust(df, X, T, Y, X_PS):
 
 def estructuras(X, Y):
     input_unit = X.shape[1] # Dimensión de entrada
-    hidden_unit = 4 # Unidades de capa oculta
+    hidden_unit = 10 # Unidades de capa oculta
     Y=Y.reshape([Y.shape[0],1])
     output_unit = Y.shape[1] # Dimensión de variable de salida
     return (input_unit, hidden_unit, output_unit)
@@ -214,7 +214,9 @@ def metrics_calculator(reference):
   model.add(Dense(1,activation='sigmoid'))
   model.compile( loss='binary_crossentropy', metrics=['accuracy'])
   history=model.fit(X_train, reference, epochs=epochs_keras, batch_size=25, verbose=0)
-  aux=(evaluate_keras((model.predict(X_test)), test_y.reshape([test_y.shape[0],1]), [], "eval"))
+  aux=(evaluate_keras((model.predict(X_test)), test_y.reshape([test_y.shape[0],1]), [], "eval",1))
+  result = model.evaluate(X_test, test_y)
+  print(result)
   loss=aux[0]
   acc=aux[1]
   X_test_df=pd.DataFrame(X_test)
@@ -422,14 +424,15 @@ results_keras = pd.concat([reg_1], axis=1)
 results.to_csv(prefix_results+'MANUAL_RESULTS'+suffix, index=False)
 results_keras.to_csv(prefix_results+'KERAS_RESULTS'+suffix, index=False)
 print(results)
+print(results_keras)
 
 
 
 
-# READ GANITE'S OUTPUT
+# # READ GANITE'S OUTPUT
 
 def data_loader(alpha_ganite):
-    suf="_alpha_"+str(alpha_ganite)+version
+    suf="_alpha_"+str(alpha_ganite)+"_iters_7000_neurons_13"+version
     X_train_ganite = np.loadtxt(prefix_ganite+"train_x_ganite"+suf, delimiter=",",skiprows=1)
     #print(X_train_ganite.shape)
     train_t_ganite = np.loadtxt(prefix_ganite+"train_t_ganite"+suf, delimiter=",",skiprows=1)
